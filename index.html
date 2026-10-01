@@ -1,0 +1,1094 @@
+<title>依依的一天</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+
+  :root{
+    color-scheme: dark;
+    --page:      #121212;
+    --surface:   #1c1c1c;
+    --surface-2: #262626;
+    --ink:       #eeece6;
+    --ink-soft:  #b7b2a6;
+    --ink-muted: #7d7869;
+    --line:      #323232;
+    --border:    rgba(255,255,255,0.14);
+    --accent:    #e78a5f;
+    --accent-soft: #3a2a1e;
+    --on-accent: #1c0d04;
+    --yang:      #d9ab4e;
+    --yang-soft: #3a3018;
+    --yi:        #4fa88f;
+    --yi-soft:   #1a332c;
+    --good: #4caf50;
+    --bad:  #e0685a;
+    --lvl-0: #2e6b45; --lvl-1: #3f8a5a; --lvl-2: #57a873; --lvl-3: #7fc797; --lvl-4: #aee0bc;
+    --case-bg: #090909;
+    --case-ink: #f1ede4;
+  }
+
+  *{ box-sizing:border-box; }
+  body{ background:var(--page); color:var(--ink); font-family:"Noto Serif TC",serif; line-height:1.75; }
+  h1,h2,h3{ font-family:"Noto Serif TC",serif; text-wrap:balance; margin:0; }
+  .wrap{ max-width:760px; margin:0 auto; padding:0 24px; }
+  .slide{ display:none; min-height:100vh; padding:64px 0 90px; }
+  .slide.active{ display:block; }
+  .eyebrow{ font-size:12.5px; font-weight:700; letter-spacing:.14em; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .eyebrow::before{ content:""; width:20px; height:2px; background:var(--accent); display:inline-block; }
+  .head{ max-width:620px; margin-bottom:32px; }
+  .head h2{ font-size:clamp(21px,3vw,28px); font-weight:700; margin-bottom:10px; }
+  p{ color:var(--ink-soft); }
+  .lede{ font-size:16.5px; max-width:60ch; }
+  .src{ font-size:12px; color:var(--ink-muted); margin-top:6px; }
+  .btn{ font:inherit; font-weight:700; font-size:14px; border:none; cursor:pointer; padding:11px 22px; border-radius:999px; background:var(--accent); color:var(--on-accent); transition:transform .12s; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn.ghost{ background:var(--surface-2); color:var(--ink); border:1px solid var(--border); }
+  .btn.text{ background:transparent; color:var(--ink-muted); padding:8px 4px; font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; justify-content:center; }
+  .hidden{ display:none !important; }
+
+  /* ---------- PROGRESS DOTS ---------- */
+  #progress{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px; z-index:50; background:rgba(0,0,0,.35); padding:8px 12px; border-radius:999px; backdrop-filter:blur(4px); }
+  #progress .d{ width:7px; height:7px; border-radius:50%; background:#4a4a4a; cursor:pointer; transition:background .15s,transform .15s; }
+  #progress .d.on{ background:var(--accent); transform:scale(1.3); }
+  #progress .d.done{ background:var(--ink-muted); }
+
+  /* ---------- SLIDE 0: OPENING ---------- */
+  #open.active{ display:flex; align-items:center; justify-content:center; text-align:center; }
+  #open .wrap{ display:flex; flex-direction:column; align-items:center; gap:28px; }
+  #open .line{ font-family:"Noto Serif TC",serif; font-weight:700; font-size:clamp(22px,4.4vw,34px); }
+
+  /* ---------- SLIDE 1 ---------- */
+  .bar-chart{ display:flex; flex-direction:column; gap:6px; }
+  .bar-row{ display:grid; grid-template-columns:64px 1fr 52px; align-items:center; gap:10px; cursor:pointer; padding:3px 0; }
+  .bar-row .nm{ font-size:13px; font-weight:600; }
+  .bar-track{ background:var(--surface-2); border-radius:6px; height:16px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:6px; background:linear-gradient(90deg,var(--lvl-0),var(--lvl-3)); transition:width .5s ease; }
+  .bar-row .val{ font-size:12.5px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .bar-detail{ margin-top:14px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; font-size:14px; min-height:24px; }
+  .s1-tooltip{ position:fixed; z-index:50; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13.5px; line-height:1.55; max-width:240px; box-shadow:0 10px 28px rgba(0,0,0,0.45); }
+  .s1-tooltip.hidden{ display:none; }
+
+  /* ---------- SLIDE 2: SCENARIOS ---------- */
+  .char-select{ display:flex; gap:16px; justify-content:center; margin:8px 0 30px; }
+  .char-card{ flex:1; max-width:220px; border:2px solid var(--border); border-radius:16px; padding:20px; text-align:center; cursor:pointer; background:var(--surface); }
+  .char-card.active.yang{ border-color:var(--yang); background:var(--yang-soft); }
+  .char-card.active.yi{ border-color:var(--yi); background:var(--yi-soft); }
+  .char-avatar{ width:56px; height:56px; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .char-card.yang .char-avatar{ background:var(--yang-soft); color:var(--yang); }
+  .char-card.yi .char-avatar{ background:var(--yi-soft); color:var(--yi); }
+  .char-card .nm{ font-weight:700; font-size:16px; }
+  .char-card .tag{ font-size:12px; color:var(--ink-muted); margin-top:2px; }
+
+  .scenario-box{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:26px; }
+  .scenario-step{ font-size:12px; color:var(--ink-muted); font-weight:700; letter-spacing:.08em; margin-bottom:12px; }
+  .scenario-icon{ margin-bottom:16px; }
+  .scenario-text{ font-size:16px; font-weight:500; min-height:52px; }
+  .scenario-src{ font-size:12px; color:var(--ink-muted); margin-top:10px; }
+  .scenario-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; gap:10px; flex-wrap:wrap; }
+  .dots{ display:flex; gap:6px; }
+  .dots span{ width:7px; height:7px; border-radius:50%; background:var(--border); }
+  .dots span.on{ background:var(--accent); }
+  .closing-line{ text-align:center; font-family:"Noto Serif TC",serif; font-size:19px; font-weight:700; margin-top:28px; padding:20px; }
+
+  /* ---------- SLIDE 3: CHAT ---------- */
+  .chat-window{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px; min-height:220px; display:flex; flex-direction:column; gap:10px; }
+  .bubble{ max-width:78%; padding:11px 16px; border-radius:16px; font-size:14.5px; opacity:0; transform:translateY(6px); animation:bubbleIn .4s ease forwards; }
+  @keyframes bubbleIn{ to{ opacity:1; transform:translateY(0); } }
+  .bubble.me{ align-self:flex-end; background:var(--accent-soft); border-bottom-right-radius:4px; }
+  .bubble.kid{ align-self:flex-start; background:var(--surface-2); border-bottom-left-radius:4px; }
+  .bubble.kid.turn{ background:var(--yi-soft); font-weight:700; font-size:15.5px; border:1.5px solid var(--yi); }
+  .monologue{ background:#f6ecd6; color:#2a231a; border-radius:4px; padding:34px 30px; font-family:"Noto Serif TC",serif; font-size:17px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,.4); background-image:repeating-linear-gradient(#f6ecd6 0 31px, #e2d2ac 32px); line-height:32px; }
+
+  /* ---------- SLIDE 4: WORD CLOUD ---------- */
+  .prompt-line{ text-align:center; font-family:"Noto Serif TC",serif; font-size:clamp(20px,3.4vw,28px); font-weight:700; min-height:120px; display:flex; align-items:center; justify-content:center; }
+  .cloud{ position:relative; height:260px; }
+  .cloud span{ position:absolute; opacity:0; font-weight:700; color:var(--ink); transition:opacity .6s ease; white-space:nowrap; }
+  .cloud span.show{ opacity:.85; }
+  .closing-dark p{ text-align:center; font-family:"Noto Serif TC",serif; font-size:18px; color:var(--ink); max-width:520px; margin:0 auto; }
+  .closing-dark p.src{ font-size:11px; color:var(--ink-muted); max-width:460px; margin:6px auto 0; }
+  #s4 .btn-row{ justify-content:center; }
+
+  /* ---------- SLIDE 5 & 6: CARD GRIDS ---------- */
+  .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .topic-card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 14px; text-align:center; cursor:pointer; transition:border-color .15s; }
+  .topic-card:hover{ border-color:var(--accent); }
+  .topic-card .ic{ font-size:26px; margin-bottom:8px; }
+  .topic-card .t{ font-size:13.5px; font-weight:700; }
+  .journey{ display:flex; align-items:flex-start; gap:2px; margin:20px 0 8px; }
+  .journey-step{ flex:1; min-width:0; text-align:center; }
+  .journey-step .ic{ font-size:26px; }
+  .journey-step .lb{ font-size:12.5px; color:var(--ink-soft); margin-top:6px; line-height:1.4; }
+  .journey-step.hot .ic{ font-size:36px; }
+  .journey-step.hot .lb{ color:var(--accent); font-weight:700; }
+  .journey-arrow{ align-self:center; color:var(--ink-muted); font-size:16px; padding:0 2px 28px; }
+  .detail-panel{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:26px; }
+  .detail-panel .quote{ font-size:20px; font-weight:700; margin-bottom:18px; line-height:1.6; }
+  .detail-panel ul{ margin:0; padding-left:22px; color:var(--ink-soft); font-size:16.5px; line-height:1.85; }
+  .detail-panel li{ margin-bottom:12px; }
+  .hl{ color:var(--accent); font-weight:800; font-size:1.1em; }
+
+  /* ---------- STAT TILES ---------- */
+  .stat-tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin:18px 0; }
+  .stat-tile{ background:var(--surface-2); border-radius:14px; padding:16px 16px 14px; }
+  .stat-tile .v{ font-family:"Noto Serif TC",serif; font-weight:900; font-size:30px; color:var(--accent); line-height:1.15; }
+  .stat-tile .v small{ font-family:"Noto Sans TC",sans-serif; font-weight:600; font-size:13px; color:var(--ink-muted); }
+  .stat-tile .k{ font-size:14.5px; color:var(--ink-muted); margin-top:6px; line-height:1.45; }
+
+  /* ---------- MINI TREND BARS ---------- */
+  .trend-row{ display:flex; align-items:flex-end; gap:14px; height:110px; margin:18px 0 8px; }
+  .trend-col{ flex:1; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .trend-bar{ width:100%; max-width:46px; border-radius:5px 5px 0 0; background:var(--accent); }
+  .trend-val{ font-size:14.5px; font-weight:700; margin-bottom:4px; }
+  .trend-lbl{ font-size:13px; color:var(--ink-muted); margin-top:6px; }
+  .detail-nav{ display:flex; justify-content:space-between; margin-top:22px; gap:10px; flex-wrap:wrap; }
+  .kicker{ font-size:16px; font-weight:700; margin-top:24px; text-align:center; }
+  .skip-row{ margin-top:16px; text-align:center; }
+
+  /* pictogram */
+  .picto-heading{ font-size:17px; font-weight:700; margin:18px 0 10px; }
+  .picto-subject{ display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:wrap; }
+  .picto-subject .lbl{ width:56px; font-size:15px; font-weight:700; flex:0 0 auto; }
+  .picto-row{ display:flex; gap:7px; flex-wrap:wrap; flex:1; }
+  .picto-row .p{ width:28px; height:28px; border-radius:50%; background:#3d3d3d; border:1.5px solid #5c5c5c; }
+  .picto-row .p.hit{ background:var(--bad); border-color:var(--bad); }
+  .picto-subject .pct{ font-family:"Noto Serif TC",serif; font-weight:900; font-size:22px; color:var(--bad); flex:0 0 auto; min-width:62px; text-align:right; }
+  .picto-legend{ font-size:14px; color:var(--ink-soft); margin:10px 0 4px; }
+  .picto-legend .sw{ display:inline-block; width:13px; height:13px; border-radius:50%; background:var(--bad); margin-right:6px; vertical-align:-2px; }
+  .picto-toggle{ display:inline-flex; background:var(--surface-2); border-radius:999px; padding:4px; gap:2px; margin-bottom:14px; }
+  .picto-toggle button{ border:none; background:transparent; font:inherit; font-weight:700; font-size:14px; padding:8px 16px; border-radius:999px; cursor:pointer; color:var(--ink-soft); }
+  .picto-toggle button.active{ background:var(--accent); color:var(--on-accent); }
+
+  .stair-svg{ width:100%; height:auto; }
+
+  .drop-list{ display:flex; flex-direction:column; gap:3px; max-height:340px; overflow-y:auto; padding-right:4px; }
+  .drop-row{ display:grid; grid-template-columns:60px 1fr 1fr 95px; align-items:center; gap:6px; font-size:13px; padding:4px 0; }
+  .drop-row .nm{ font-weight:600; }
+  .drop-track{ background:var(--surface-2); border-radius:4px; height:10px; overflow:hidden; }
+  .drop-fill.jr{ height:100%; background:var(--accent); }
+  .drop-fill.hs{ height:100%; background:var(--yi); }
+  .drop-legend{ display:flex; gap:16px; font-size:13.5px; color:var(--ink-muted); margin-bottom:8px; }
+  .drop-legend .sw{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+
+  .map-toggle{ display:flex; gap:6px; margin-bottom:10px; }
+  .map-toggle button{ border:1px solid var(--border); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:12.5px; font-weight:600; padding:6px 14px; border-radius:8px; cursor:pointer; }
+  .map-toggle button.active{ background:var(--accent-soft); color:var(--ink); border-color:var(--accent); }
+  .map-svg{ width:100%; max-width:440px; height:auto; display:block; margin:0 auto; }
+  .map-tip{ font-size:13px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-top:8px; min-height:20px; }
+
+  .beat{ margin-bottom:16px; }
+  .beat.story{ font-size:20px; font-weight:600; line-height:1.7; }
+  .beat.case{ background:#000; color:var(--case-ink); border-radius:14px; padding:20px 22px; font-size:16px; line-height:1.75; border:1px solid var(--line); }
+  .beat.case .tag{ display:inline-block; font-size:11px; font-weight:700; letter-spacing:.06em; background:var(--accent); color:var(--on-accent); padding:3px 10px; border-radius:999px; margin-bottom:8px; }
+  .beat.case .src{ color:#a89e8a; margin-top:8px; }
+  .step-wrap{ min-height:140px; }
+
+  .cmp-metric{ margin-bottom:16px; }
+  .cmp-label{ font-size:14.5px; font-weight:600; margin-bottom:6px; }
+  .cmp-bars{ display:flex; flex-direction:column; gap:4px; }
+  .cmp-bar-row{ display:grid; grid-template-columns:62px 1fr 56px; align-items:center; gap:8px; font-size:13px; }
+  .cmp-track{ background:var(--surface-2); border-radius:5px; height:12px; overflow:hidden; }
+  .cmp-fill.rural{ background:var(--yi); height:100%; }
+  .cmp-fill.urban{ background:var(--yang); height:100%; }
+
+  footer{ padding:30px 0 100px; }
+  footer p{ font-size:12px; color:var(--ink-muted); }
+</style>
+
+<!-- ================= 0 · OPENING ================= -->
+<section id="open" class="slide active">
+  <div class="wrap">
+    <div class="line" id="openLine">你覺得，一個孩子的未來，是被他多努力決定，還是被他出生在哪裡決定？</div>
+    <button class="btn" id="openBtn">想一下</button>
+  </div>
+</section>
+
+<!-- ================= 1 · 定義 ================= -->
+<section id="s1" class="slide">
+  <div class="wrap">
+    <div class="eyebrow">起點</div>
+    <h2 style="font-size:clamp(26px,4vw,36px);font-weight:900;margin-bottom:16px;">偏鄉，到底有多偏？</h2>
+    <p class="lede">台灣的國小，依交通、文化、生活機能、數位環境、社經條件等16項指標，被教育部分成「一般」「偏遠」「特偏」「極偏」四個等級。<span class="src">來源：教育部《偏遠地區學校分級及認定標準》；立法院教文委員會報告</span></p>
+
+    <div class="bar-chart" id="s1Chart" style="margin-top:28px;position:relative;"></div>
+    <div class="bar-detail" id="s1Hint">點一個縣市，看看那裡的國小有多少比例是偏遠地區。</div>
+    <div class="s1-tooltip hidden" id="s1Tip"></div>
+
+    <p style="margin-top:26px;font-family:'Noto Serif TC',serif;font-weight:700;font-size:17px;color:var(--ink);">「偏遠」不是一個模糊的形容詞，是政府白紙黑字認證的資源等級。接下來，我們想帶你看看，這個等級背後，是怎樣的兩種童年。</p>
+    <div class="btn-row"><button class="btn" id="s1Btn">繼續 →</button></div>
+  </div>
+</section>
+
+<!-- ================= 2 · 角色情境 ================= -->
+<section id="s2" class="slide">
+  <div class="wrap">
+    <div class="eyebrow">體驗</div>
+    <h2 style="font-size:clamp(21px,3vw,28px);font-weight:700;margin-bottom:22px;">點一個名字，開始體驗他的一天</h2>
+    <div class="char-select" id="charSelect"></div>
+    <div class="scenario-box" id="scenarioBox"></div>
+    <div class="closing-line hidden" id="s2Closing"></div>
+  </div>
+</section>
+
+<!-- ================= 3 · 親身經驗 ================= -->
+<section id="s3" class="slide">
+  <div class="wrap">
+    <div class="eyebrow">親身經驗</div>
+    <h2 style="font-size:clamp(21px,3vw,28px);font-weight:700;margin-bottom:10px;">我曾經跟著服務性社團，去到一所偏遠小學</h2>
+    <p class="lede" style="margin-bottom:20px;">那天正在帶一個和孩子聊未來夢想、職業的活動。</p>
+    <div class="chat-window" id="chatWindow"></div>
+    <div class="btn-row"><button class="btn" id="chatNextBtn">繼續</button></div>
+  </div>
+</section>
+
+<!-- ================= 4 · 刻板印象 ================= -->
+<section id="s4" class="slide">
+  <div class="wrap">
+    <div class="eyebrow">轉念</div>
+    <div class="prompt-line" id="s4Stage"></div>
+    <div class="cloud hidden" id="s4Cloud"></div>
+    <div class="closing-dark hidden" id="s4Closing">
+      <p>「但很少有人問：這些標籤，是怎麼貼上去的？」</p>
+      <p class="src" style="text-align:center;">來源：劉政暉，〈「偏鄉教育」問題在哪？打破低期待與標籤化〉，獨立評論@天下</p>
+      <p style="margin-top:18px;">「那，這真的是他們自己的錯嗎？」</p>
+    </div>
+    <div class="btn-row"><button class="btn" id="s4Btn">繼續</button></div>
+  </div>
+</section>
+
+<!-- ================= 5 · 結構性弱勢 ================= -->
+<section id="s5" class="slide">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">議題剖析①</div>
+      <h2>偏鄉小孩遇到了哪些結構性弱勢？</h2>
+      <p>依依想告訴你，不是他不努力。點一張卡片看看。</p>
+    </div>
+    <div class="card-grid" id="s5Grid"></div>
+    <div class="skip-row" id="s5SkipRow"><button class="btn text" id="s5Skip">先不看了，直接進入下一段 →</button></div>
+    <div class="detail-panel hidden" id="s5Detail"></div>
+    <div class="kicker hidden" id="s5Kicker"></div>
+  </div>
+</section>
+
+<!-- ================= 6 · 差距 ================= -->
+<section id="s6" class="slide">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">議題剖析②</div>
+      <h2>一般國小和偏鄉國小，產生了哪些差距？</h2>
+    </div>
+    <div class="card-grid" id="s6Grid"></div>
+    <div class="skip-row" id="s6SkipRow"><button class="btn text" id="s6Skip">先不看了，直接進入下一段 →</button></div>
+    <div class="detail-panel hidden" id="s6Detail"></div>
+  </div>
+</section>
+
+<!-- ================= 7 · 結局 ================= -->
+<section id="s7" class="slide">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">故事收尾</div>
+      <h2>依依可能會有什麼樣的未來？</h2>
+    </div>
+    <div class="step-wrap" id="s7Steps"></div>
+    <div class="btn-row"><button class="btn" id="s7Btn">繼續</button></div>
+  </div>
+</section>
+
+<!-- ================= 8 · 呼籲 ================= -->
+<section id="s8" class="slide">
+  <div class="wrap">
+    <div class="eyebrow">寫給你</div>
+    <div class="step-wrap" id="s8Steps" style="min-height:160px;"></div>
+    <div class="btn-row"><button class="btn" id="s8Btn">繼續</button></div>
+  </div>
+</section>
+
+<!-- ================= 9 · 延伸認識 ================= -->
+<section id="s9" class="slide">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">延伸閱讀</div>
+      <h2>還有兩個容易被忽略的議題</h2>
+    </div>
+    <div class="card-grid" id="s9Grid"></div>
+    <div class="detail-panel hidden" id="s9Detail"></div>
+    <footer>
+      <p>資料年度：偏遠/特偏/極偏分級與生師比、班級規模為110學年度；非山非市認定為110至112學年度核定名單；代理教師比例涵蓋103與110學年度；中輟率為113學年度、高中學籍喪失率為112學年度。文中人物「陽陽」「依依」為情境模擬角色，第3段對話為真實經歷、細節已匿名處理。完整資料來源請見文獻與資料來源清單。</p>
+    </footer>
+  </div>
+</section>
+
+<div id="progress"></div>
+
+<script>
+/* ===================== SLIDE MANAGER ===================== */
+const SLIDE_IDS = ['open','s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+let currentSlide = 0, maxReached = 0;
+function showSlide(i){
+  currentSlide = i;
+  maxReached = Math.max(maxReached, i);
+  SLIDE_IDS.forEach((id,idx)=>{
+    document.getElementById(id).classList.toggle('active', idx===i);
+  });
+  window.scrollTo(0,0);
+  renderProgress();
+}
+function renderProgress(){
+  const el = document.getElementById('progress');
+  el.innerHTML = SLIDE_IDS.map((id,idx)=>
+    `<span class="d ${idx===currentSlide?'on':(idx<=maxReached?'done':'')}" data-i="${idx}"></span>`
+  ).join('');
+  el.querySelectorAll('.d').forEach(d=>{
+    d.addEventListener('click', ()=>{
+      const i = +d.dataset.i;
+      if(i<=maxReached) showSlide(i);
+    });
+  });
+}
+renderProgress();
+
+/* ===================== DATA ===================== */
+const LEVELS = [
+  {key:'一般', n:'一般(非偏遠)', count:1384, ratio:13.59, cls:25.35},
+  {key:'非山非市', n:'非山非市', count:361, ratio:9.58, cls:18.39},
+  {key:'偏遠', n:'偏遠', count:646, ratio:5.54, cls:11.55},
+  {key:'特偏', n:'特偏', count:161, ratio:3.84, cls:8.00},
+  {key:'極偏', n:'極偏', count:110, ratio:3.43, cls:7.06},
+];
+const LVL_VARS = ['--lvl-0','--lvl-1','--lvl-2','--lvl-3','--lvl-4'];
+
+const COUNTIES = [
+  {c:'臺東縣', total:88, remote:66, remotePct:75, nonmt:2, nonmtPct:2.3, sub110:17.72, jr:0.54, hs:7.33, x:186, y:330},
+  {c:'花蓮縣', total:103, remote:70, remotePct:68, nonmt:5, nonmtPct:4.9, sub110:19.78, jr:1.00, hs:6.75, x:196, y:225},
+  {c:'嘉義縣', total:123, remote:80, remotePct:65, nonmt:25, nonmtPct:20.3, sub110:13.61, jr:0.39, hs:3.51, x:104, y:252},
+  {c:'雲林縣', total:157, remote:93, remotePct:59.2, nonmt:17, nonmtPct:10.8, sub110:13.37, jr:0.35, hs:2.21, x:96, y:228},
+  {c:'南投縣', total:139, remote:82, remotePct:59, nonmt:25, nonmtPct:18, sub110:13.82, jr:0.32, hs:6.16, x:150, y:218},
+  {c:'屏東縣', total:165, remote:78, remotePct:47.3, nonmt:45, nonmtPct:27.3, sub110:16.23, jr:0.57, hs:4.69, x:120, y:372},
+  {c:'臺南市', total:212, remote:93, remotePct:43.9, nonmt:31, nonmtPct:14.6, sub110:12.72, jr:0.21, hs:3.31, x:92, y:290},
+  {c:'苗栗縣', total:114, remote:37, remotePct:32.5, nonmt:25, nonmtPct:21.9, sub110:11.60, jr:0.47, hs:4.02, x:122, y:160},
+  {c:'彰化縣', total:174, remote:50, remotePct:28.7, nonmt:46, nonmtPct:26.4, sub110:15.09, jr:0.28, hs:4.09, x:100, y:210},
+  {c:'新竹縣', total:86, remote:23, remotePct:26.7, nonmt:16, nonmtPct:18.6, sub110:11.66, jr:0.39, hs:3.25, x:130, y:135},
+  {c:'高雄市', total:242, remote:55, remotePct:22.7, nonmt:37, nonmtPct:15.3, sub110:12.46, jr:0.25, hs:4.09, x:98, y:325},
+  {c:'宜蘭縣', total:76, remote:17, remotePct:22.4, nonmt:13, nonmtPct:17.1, sub110:11.62, jr:0.30, hs:5.61, x:208, y:108},
+  {c:'新北市', total:215, remote:45, remotePct:20.9, nonmt:19, nonmtPct:8.8, sub110:11.88, jr:0.43, hs:4.92, x:160, y:75},
+  {c:'臺中市', total:237, remote:41, remotePct:17.3, nonmt:23, nonmtPct:9.7, sub110:12.13, jr:0.21, hs:3.22, x:124, y:188},
+  {c:'桃園市', total:191, remote:24, remotePct:12.6, nonmt:31, nonmtPct:16.2, sub110:10.39, jr:0.23, hs:3.77, x:130, y:98},
+  {c:'臺北市', total:148, remote:0, remotePct:0, nonmt:0, nonmtPct:0, sub110:10.19, jr:0.14, hs:3.12, x:178, y:62},
+  {c:'基隆市', total:39, remote:0, remotePct:0, nonmt:2, nonmtPct:5.1, sub110:10.53, jr:0.64, hs:7.33, x:202, y:42},
+  {c:'新竹市', total:34, remote:0, remotePct:0, nonmt:0, nonmtPct:0, sub110:12.79, jr:0.27, hs:2.38, x:112, y:128},
+  {c:'嘉義市', total:20, remote:0, remotePct:0, nonmt:0, nonmtPct:0, sub110:17.14, jr:0.15, hs:3.26, x:98, y:245},
+  {c:'澎湖縣', total:37, remote:37, remotePct:100, nonmt:0, nonmtPct:0, sub110:10.13, jr:0.24, hs:5.03, x:42, y:270},
+  {c:'金門縣', total:19, remote:19, remotePct:100, nonmt:0, nonmtPct:0, sub110:20.62, jr:0.48, hs:9.56, x:55, y:424},
+  {c:'連江縣', total:7, remote:7, remotePct:100, nonmt:0, nonmtPct:0, sub110:7.89, jr:null, hs:null, x:105, y:424},
+];
+
+const LVL_COLORS = ['#2e6b45','#3f8a5a','#57a873','#7fc797','#aee0bc'];
+function lerpLevelColor(t){
+  const idx = Math.min(4, Math.floor(t*4.999));
+  return LVL_COLORS[idx];
+}
+
+/* {{重點文字}} -> <span class="hl">重點文字</span>，讓條列文字裡的關鍵數字/詞可以放大變色 */
+function hl(text){ return text.replace(/\{\{(.+?)\}\}/g, '<span class="hl">$1</span>'); }
+function renderBullets(bullets){ return `<ul>${bullets.map(b=>`<li>${hl(b)}</li>`).join('')}</ul>`; }
+function statTiles(items){
+  return `<div class="stat-tiles">${items.map(it=>`
+    <div class="stat-tile"><div class="v">${it.v}${it.unit?`<small> ${it.unit}</small>`:''}</div><div class="k">${it.k}</div></div>
+  `).join('')}</div>`;
+}
+function trendBars(items){
+  const max = Math.max(...items.map(i=>i.v));
+  return `<div class="trend-row">${items.map(i=>`
+    <div class="trend-col">
+      <div class="trend-val">${i.v}${i.unit||''}</div>
+      <div class="trend-bar" style="height:${(i.v/max*80)}px;"></div>
+      <div class="trend-lbl">${i.k}</div>
+    </div>`).join('')}</div>`;
+}
+
+/* ===================== SLIDE 0 ===================== */
+(function(){
+  const line = document.getElementById('openLine');
+  const btn = document.getElementById('openBtn');
+  let step = 0;
+  const LINES = ['你覺得，一個孩子的未來，是被他多努力決定，還是被他出生在哪裡決定？','如果你也遲疑了一下——這，就是我們想從「偏遠」這兩個字開始談起的原因。'];
+  btn.addEventListener('click', ()=>{
+    if(step===0){ step=1; line.textContent = LINES[1]; btn.textContent = '繼續'; }
+    else{ showSlide(1); }
+  });
+})();
+
+/* ===================== SLIDE 1 ===================== */
+(function(){
+  const sorted = [...COUNTIES].sort((a,b)=>b.remotePct-a.remotePct);
+  const chart = document.getElementById('s1Chart');
+  chart.innerHTML = sorted.map(c=>`
+    <div class="bar-row" data-c="${c.c}">
+      <div class="nm">${c.c}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${c.remotePct}%"></div></div>
+      <div class="val">${c.remotePct}%</div>
+    </div>`).join('');
+  const tip = document.getElementById('s1Tip');
+  let tipRow = null;
+  function placeTip(row){
+    const r = row.getBoundingClientRect();
+    tip.style.left = '0px'; tip.style.top = '0px';
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    let left = r.right + 12;
+    if(left + tw > window.innerWidth - 12) left = r.left - tw - 12;
+    if(left < 12) left = 12;
+    let top = r.top - 4;
+    if(top + th > window.innerHeight - 12) top = window.innerHeight - th - 12;
+    if(top < 12) top = 12;
+    tip.style.left = left+'px';
+    tip.style.top = top+'px';
+  }
+  function hideTip(){ tip.classList.add('hidden'); tipRow = null; }
+  chart.querySelectorAll('.bar-row').forEach(row=>{
+    row.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(tipRow===row){ hideTip(); return; }
+      const c = COUNTIES.find(x=>x.c===row.dataset.c);
+      tip.textContent = c.remotePct>0
+        ? `${c.c}：${c.total}所國小中，有${c.remote}所是偏遠、特偏或極偏地區（${c.remotePct}%）。`
+        : `${c.c}：${c.total}所國小，沒有一所被列為偏遠地區（0%）。`;
+      tip.classList.remove('hidden');
+      tipRow = row;
+      placeTip(row);
+    });
+  });
+  document.addEventListener('click', (e)=>{ if(tipRow && !tip.contains(e.target)) hideTip(); });
+  window.addEventListener('scroll', ()=>{ if(tipRow) placeTip(tipRow); }, {passive:true});
+  document.getElementById('s1Btn').addEventListener('click', ()=>showSlide(2));
+})();
+
+/* ===================== SLIDE 2 ===================== */
+const SCENARIOS = [
+  { title:'放學後',
+    yang:{icon:'📖', text:'陽陽的媽媽5點就在安親班樓下等他。', src:null},
+    yi:{icon:'📱', text:'爸媽在外地工作，晚上才回來。依依打開手機，一滑就是兩三個小時。', src:'兒童福利聯盟《2026年台灣城鄉兒童生活福祉調查》——偏鄉學童每週上網20.8小時 vs 都市12.4小時'} },
+  { title:'回家路上',
+    yang:{icon:'🚗', text:'陽陽走出校門，媽媽的車已經在等。', src:null},
+    yi:{icon:'🚌', text:'依依家門口的公車，一天只有三班。錯過這班，要再等兩小時。', src:'教育部《偏遠地區學校分級及認定標準》——交通因素為法定16項認定指標之一'} },
+  { title:'在教室裡',
+    yang:{icon:'🏫', text:'陽陽的班上有28個同學，下課十分鐘，老師忙著點名都來不及。', src:'校名層級資料：一般國小平均每班25.35人'},
+    yi:{icon:'🏫', text:'依依的班上只有6個同學，老師記得每個人的生日。', src:'校名層級資料：極偏國小平均每班7.06人'} },
+  { title:'假日',
+    yang:{icon:'🎨', text:'陽陽背著書包走進英文補習班。', src:null},
+    yi:{icon:'🌾', text:'假日，依依要幫忙顧弟弟妹妹、跟阿公下田。', src:'兒童福利聯盟《2016年台灣學童城鄉差距》——偏鄉學童隔代教養比例20.6%（都市2.3倍）'} },
+];
+(function(){
+  let activeChar = 'yi';
+  let step = 0;
+  let finished = false;
+  const selectWrap = document.getElementById('charSelect');
+  selectWrap.innerHTML = `
+    <div class="char-card yang" data-ch="yang"><div class="char-avatar"><svg viewBox="0 0 56 56" width="56" height="56">
+      <path d="M11 27 Q9 9 28 8 Q47 9 45 27 Q41 14 35 19 Q30 10 26 19 Q20 12 15 20 Q12 21 11 27 Z" fill="#d9ab4e"/>
+      <circle cx="28" cy="31" r="16" fill="#f6d9b0"/>
+      <ellipse cx="19" cy="35" rx="3" ry="2" fill="#e8a679" opacity=".55"/>
+      <ellipse cx="37" cy="35" rx="3" ry="2" fill="#e8a679" opacity=".55"/>
+      <circle cx="22" cy="31" r="1.8" fill="#2a231a"/>
+      <circle cx="34" cy="31" r="1.8" fill="#2a231a"/>
+      <path d="M22 38 Q28 43 34 38" stroke="#2a231a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </svg></div><div class="nm">陽陽</div><div class="tag">一般國小</div></div>
+    <div class="char-card yi" data-ch="yi"><div class="char-avatar"><svg viewBox="0 0 56 56" width="56" height="56">
+      <circle cx="8" cy="21" r="5.5" fill="#4fa88f"/>
+      <circle cx="48" cy="21" r="5.5" fill="#4fa88f"/>
+      <path d="M13 25 Q12 12 28 11 Q44 12 43 25 Q39 17 28 17 Q17 17 13 25 Z" fill="#4fa88f"/>
+      <circle cx="28" cy="31" r="16" fill="#f6d9b0"/>
+      <ellipse cx="19" cy="35" rx="3" ry="2" fill="#e8a679" opacity=".55"/>
+      <ellipse cx="37" cy="35" rx="3" ry="2" fill="#e8a679" opacity=".55"/>
+      <circle cx="22" cy="31" r="1.8" fill="#2a231a"/>
+      <circle cx="34" cy="31" r="1.8" fill="#2a231a"/>
+      <path d="M22 38 Q28 43 34 38" stroke="#2a231a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </svg></div><div class="nm">依依</div><div class="tag">偏鄉國小</div></div>
+  `;
+  function renderSelect(){
+    selectWrap.querySelectorAll('.char-card').forEach(c=>c.classList.toggle('active', c.dataset.ch===activeChar));
+  }
+  selectWrap.querySelectorAll('.char-card').forEach(c=>{
+    c.addEventListener('click', ()=>{ activeChar=c.dataset.ch; renderSelect(); renderScenario(); });
+  });
+
+  const box = document.getElementById('scenarioBox');
+  function renderScenario(){
+    const s = SCENARIOS[step];
+    const v = s[activeChar];
+    box.innerHTML = `
+      <div class="scenario-step">情境 ${step+1} / ${SCENARIOS.length}・${s.title}</div>
+      <div class="scenario-icon" style="font-size:48px;">${v.icon}</div>
+      <div class="scenario-text">${v.text}</div>
+      ${v.src ? `<div class="scenario-src">來源：${v.src}</div>` : ''}
+      <div class="scenario-nav">
+        <button class="btn ghost" id="swapBtn">👀 換${activeChar==='yi'?'陽陽':'依依'}看看</button>
+        <div class="dots">${SCENARIOS.map((_,i)=>`<span class="${i===step?'on':''}"></span>`).join('')}</div>
+        <button class="btn" id="nextBtn">${step<SCENARIOS.length-1?'下一個情境 →':(finished?'進入下一段 →':'看完了')}</button>
+      </div>
+    `;
+    document.getElementById('swapBtn').addEventListener('click', ()=>{ activeChar = activeChar==='yi'?'yang':'yi'; renderSelect(); renderScenario(); });
+    document.getElementById('nextBtn').addEventListener('click', ()=>{
+      if(step<SCENARIOS.length-1){ step++; renderScenario(); }
+      else if(!finished){
+        finished = true;
+        document.getElementById('s2Closing').textContent = '「你剛剛體驗的，是兩個小孩同一天的生活。」';
+        document.getElementById('s2Closing').classList.remove('hidden');
+        renderScenario();
+      } else { showSlide(3); }
+    });
+  }
+  renderSelect(); renderScenario();
+})();
+
+/* ===================== SLIDE 3 ===================== */
+const CHAT_LINES = [
+  {who:'me', text:'你未來想做什麼呀？'},
+  {who:'kid', text:'我不知道。'},
+  {who:'me', text:'那我們不要想那麼遠，你知道高中就可以選要繼續念書、還是學一技之長，像是煮飯、修汽車之類的——你喜歡做什麼呀？'},
+  {who:'kid', turn:true, text:'我不要讀書。反正我哥哥姊姊上了高中後也輟學去工作了啊，我幹嘛讀書？我才不要讀高中，我要工作賺錢。'},
+];
+const MONO_LINES = [
+  '那一刻，我瞬間愣住了。',
+  '因為在我的成長過程裡，好好讀書、升高中、上大學，一直都是唯一的路。',
+  '「輟學」對我來說，一直只是課本裡的一個名詞——直到那一刻，我才知道，這不是名詞，是某個真實孩子的人生選擇。',
+];
+(function(){
+  const win = document.getElementById('chatWindow');
+  const btn = document.getElementById('chatNextBtn');
+  let idx = 0, phase = 'chat';
+  function render(){
+    if(phase==='chat'){
+      win.className='chat-window';
+      win.innerHTML = CHAT_LINES.slice(0, idx+1).map(l=>`<div class="bubble ${l.who}${l.turn?' turn':''}">${l.text}</div>`).join('');
+    } else {
+      win.className='monologue';
+      win.innerHTML = MONO_LINES.slice(0, idx+1).map(l=>`<div>${l}</div>`).join('<br>');
+    }
+  }
+  btn.addEventListener('click', ()=>{
+    if(phase==='chat'){
+      if(idx < CHAT_LINES.length-1){ idx++; render(); }
+      else { phase='mono'; idx=0; render(); }
+    } else {
+      if(idx < MONO_LINES.length-1){ idx++; render(); }
+      else { showSlide(4); }
+    }
+  });
+  render();
+})();
+
+/* ===================== SLIDE 4 ===================== */
+(function(){
+  const WORDS = ['愛玩','混','不想讀書','懶惰','抗壓性低','家庭沒教好','遲早會學壞','不上進'];
+  const stage = document.getElementById('s4Stage');
+  const cloud = document.getElementById('s4Cloud');
+  const closing = document.getElementById('s4Closing');
+  const btn = document.getElementById('s4Btn');
+  let phase = 1;
+  const positions = [
+    {x:10,y:10,s:22},{x:55,y:20,s:30},{x:5,y:55,s:26},{x:60,y:60,s:34},
+    {x:30,y:5,s:20},{x:35,y:75,s:24},{x:70,y:35,s:22},{x:15,y:35,s:28},
+  ];
+  cloud.innerHTML = WORDS.map((w,i)=>`<span style="left:${positions[i].x}%;top:${positions[i].y}%;font-size:${positions[i].s}px;">${w}</span>`).join('');
+  stage.textContent = '我們總認為，輟學生就是……';
+
+  function step(){
+    if(phase===1){
+      stage.classList.add('hidden'); cloud.classList.remove('hidden');
+      [...cloud.children].forEach((el,i)=>setTimeout(()=>el.classList.add('show'), i*220));
+      phase=2; btn.textContent='繼續';
+    } else if(phase===2){
+      cloud.classList.add('hidden');
+      closing.classList.remove('hidden');
+      phase=3; btn.textContent='進入下一段';
+    } else {
+      showSlide(5);
+    }
+  }
+  btn.addEventListener('click', step);
+})();
+
+/* ===================== SLIDE 5 ===================== */
+const S5_CARDS = [
+  { ic:'👨‍🏫', t:'老師，留不住',
+    quote:'「這學期才開學不久，依依數了數手指——已經是第3個老師了。」',
+    tiles:[
+      {v:'2,000→4,000', k:'全國國小教師開缺人數(近年，疫情前約2千)'},
+      {v:'1.48–1.92', unit:'%', k:'偏遠地區國小教師流動率(108-111學年)'},
+    ],
+    bullets:[ '偏遠地區流動率{{高於全國平均}} [教育部書面報告,立法院,2025；立法院教文委員會報告,108-111學年度]' ] },
+  { ic:'🗺️', t:'代理老師，比例特別高',
+    quote:'「依依的導師，其實還沒有正式教師資格——而且，這其實是全台灣都在發生的事。」',
+    trend:{ items:[{v:14.8,k:'107學年'},{v:15.8,k:'108學年'},{v:15.6,k:'109學年'},{v:17.0,k:'110學年'}], unit:'%', label:'全國國中小代理教師占比，逐年攀升' },
+    tiles:[
+      {v:'6,464', unit:'名', k:'115學年度全國正式教師開缺，創近5年新高'},
+      {v:'614', unit:'人', k:'截至2026/8/25全國代理教師仍缺(國小211+國中403)'},
+      {v:'0.42', unit:'%', k:'代理缺額占公立國中小教師總數比例'},
+    ],
+    bullets:[
+      '成因：{{少子化}}下師資培育員額緊縮、{{教師年金改革}}後退休潮加速、代理教師薪資與工作保障不如正式教師，導致儲備教師不願報考 [中央社/工商時報,2026；風傳媒,2026]',
+    ] },
+  { ic:'📚', t:'一個老師，要教好幾科',
+    quote:'「數學課、自然課、美術課……都是同一個老師。依依也搞不清楚，這位老師到底是教什麼的。」',
+    tiles:[
+      {v:'21', unit:'節/週', k:'新北市巡迴輔導老師平均授課節數'},
+      {v:'13', unit:'人', k:'鼻頭國小全校學生數(案例)'},
+    ],
+    bullets:[
+      '偏遠學校教師人數遠少於部定課程科目數（8大領域、20餘科目），監委調查發現有教師{{「一人教四科」}}現象 [監察院調查報告，經關鍵評論網報導]',
+      '巡迴輔導老師一人要跑金山、汐止、淡水等多個偏遠校區 [聯合報,2023]',
+      '偏鄉因員額編制限制、外聘兼課教師不易，導致教師{{專長授課比例偏低}} [臺灣教育評論月刊,2022]',
+      '偏鄉小校常以{{混齡教學}}因應師資不足與跨科教學壓力 [教育實踐與研究,2016]',
+    ] },
+  { ic:'🚌', t:'回家的路，好遠',
+    quote:'「依依每天花在路上的時間，比寫作業還久——搭一次公車要等兩個小時，遇到颱風天，學校可能直接放假，因為連老師都上不了山。」',
+    journey:[
+      {icon:'🚶', label:'走山路到站牌'},
+      {icon:'⏳', label:'部分路線一天僅3班公車，錯過要再等2小時', hot:true},
+      {icon:'🚌', label:'蜿蜒山路，車程比路程更久'},
+      {icon:'🏫', label:'到校，已比同學晚了不少'},
+    ],
+    bullets:[
+      '交通是教育部法定16項偏遠認定指標之一，具體包含{{海拔高度}}、{{與大眾運輸/鄉鎮市公所最短距離}}等 [教育部法規]',
+      '交通不便也影響老師家訪、物資送達的頻率，形成惡性循環 [報導者,2021]',
+    ] },
+  { ic:'💻', t:'圖書館、電腦，都很少',
+    quote:'「依依家沒有電腦，學校的圖書館，書也沒有很多。」',
+    ruralUrban:{ rows:[
+        {label:'家中課外書不到10本', rural:48, urban:21.8},
+        {label:'家中無電腦', rural:23, urban:8.8},
+      ], source:'來源：兒童福利聯盟《2016年台灣學童城鄉差距》調查(都市數字由「都市倍數」換算)',
+      note:'花蓮玉里三民國中112名學生中{{29人}}須向學校借電腦才能上網課，{{近1/4}} [報導者,2021]' } },
+  { ic:'🏠', t:'家裡，也在辛苦',
+    quote:'「依依的爸媽都到外縣市工作了，家裡只剩阿公阿嬤。學校的家長會，來的常常不是爸爸媽媽。」',
+    chart:true },
+];
+function renderCardGrid(gridId, detailId, skipRowId, cards, kickerId, nextSlide){
+  const grid = document.getElementById(gridId);
+  const detail = document.getElementById(detailId);
+  const skipRow = skipRowId ? document.getElementById(skipRowId) : null;
+  grid.innerHTML = cards.map((c,i)=>`<div class="topic-card" data-i="${i}"><div class="ic">${c.ic}</div><div class="t">${c.t}</div></div>`).join('');
+  function openCard(i){
+    const c = cards[i];
+    grid.classList.add('hidden');
+    if(skipRow) skipRow.classList.add('hidden');
+    detail.classList.remove('hidden');
+    if(kickerId) document.getElementById(kickerId).classList.add('hidden');
+    let extra = '';
+    if(c.tiles) extra += statTiles(c.tiles);
+    if(c.trend) extra += `<p style="font-weight:600;margin-bottom:4px;">${hl(c.trend.label)}</p>` + trendBars(c.trend.items.map(x=>({v:x.v, k:x.k, unit:c.trend.unit})));
+    if(c.journey) extra += `<div class="journey">${c.journey.map((s,idx)=>(idx>0?'<div class="journey-arrow">→</div>':'')+`<div class="journey-step${s.hot?' hot':''}"><div class="ic">${s.icon}</div><div class="lb">${hl(s.label)}</div></div>`).join('')}</div>`;
+    if(c.bullets) extra += renderBullets(c.bullets);
+    detail.innerHTML = `
+      <div class="quote">${hl(c.quote)}</div>
+      <div id="cardExtra"></div>
+      <div class="detail-nav">
+        <button class="btn ghost" id="backBtn">← 回到圖卡選單</button>
+        <button class="btn" id="nextSecBtn">進入下一段 →</button>
+      </div>
+    `;
+    document.getElementById('cardExtra').innerHTML = extra;
+    if(c.chart) renderFamilyBars(document.getElementById('cardExtra'));
+    if(c.ruralUrban) renderRuralUrbanBars(document.getElementById('cardExtra'), c.ruralUrban.rows, c.ruralUrban.source, c.ruralUrban.note);
+    document.getElementById('backBtn').addEventListener('click', ()=>{
+      detail.classList.add('hidden'); grid.classList.remove('hidden');
+      if(skipRow) skipRow.classList.remove('hidden');
+    });
+    document.getElementById('nextSecBtn').addEventListener('click', ()=>{
+      detail.classList.add('hidden');
+      grid.classList.remove('hidden');
+      if(skipRow) skipRow.classList.remove('hidden');
+      if(kickerId){
+        document.getElementById(kickerId).textContent = document.getElementById(kickerId).dataset.text;
+        document.getElementById(kickerId).classList.remove('hidden');
+      } else {
+        showSlide(nextSlide);
+      }
+    });
+  }
+  grid.querySelectorAll('.topic-card').forEach(card=>{
+    card.addEventListener('click', ()=>openCard(+card.dataset.i));
+  });
+}
+function renderRuralUrbanBars(container, rows, sourceHtml, noteHtml){
+  const max = Math.max(...rows.map(r=>Math.max(r.rural,r.urban))) * 1.15;
+  container.innerHTML += `
+    <div class="drop-legend"><span><span class="sw" style="background:var(--yi)"></span>偏鄉</span><span><span class="sw" style="background:var(--yang)"></span>都市</span></div>
+    ${rows.map(r=>`
+      <div class="cmp-metric">
+        <div class="cmp-label">${r.label}</div>
+        <div class="cmp-bars">
+          <div class="cmp-bar-row"><div>偏鄉</div><div class="cmp-track"><div class="cmp-fill rural" style="width:${r.rural/max*100}%"></div></div><div>${r.rural}${r.unit||'%'}</div></div>
+          <div class="cmp-bar-row"><div>都市</div><div class="cmp-track"><div class="cmp-fill urban" style="width:${r.urban/max*100}%"></div></div><div>${r.urban}${r.unit||'%'}</div></div>
+        </div>
+      </div>`).join('')}
+    ${sourceHtml?`<p class="src">${sourceHtml}</p>`:''}
+    ${noteHtml?`<p style="font-size:14.5px;color:var(--ink-soft);margin-top:6px;">${hl(noteHtml)}</p>`:''}
+  `;
+}
+function renderFamilyBars(container){
+  renderRuralUrbanBars(container, [
+    {label:'隔代教養比例', rural:20.6, urban:8.8},
+    {label:'留守兒童比例', rural:17.1, urban:10.7},
+    {label:'家中無穩定收入比例', rural:13.3, urban:8.9},
+  ], '來源：兒童福利聯盟《2016年台灣學童城鄉差距》調查',
+  '這份調查也發現，{{近七成}}偏鄉窮孩子曾經飢餓入睡，{{三成五}}沒有兩雙合腳的鞋子。');
+}
+document.getElementById('s5Kicker').dataset.text = '「這些都不是依依一個人的狀況，而是台灣無數個偏鄉孩童的日常。」';
+renderCardGrid('s5Grid','s5Detail','s5SkipRow', S5_CARDS, 's5Kicker', 6);
+document.getElementById('s5Skip').addEventListener('click', ()=>showSlide(6));
+document.getElementById('s5Kicker').addEventListener('click', ()=>showSlide(6));
+document.getElementById('s5Kicker').style.cursor='pointer';
+
+/* pillar map component */
+/* scatter chart: x = xMetric(remotePct|nonmtPct), y = 代理教師占比(sub110), one dot per county */
+function renderScatterChart(container, xMetric, toggle){
+  const W=420, H=300, padL=42, padR=16, padT=16, padB=36;
+  const chartW = W-padL-padR, chartH = H-padT-padB;
+
+  function statsFor(metric){
+    const pts = COUNTIES.filter(c=>c.sub110!=null);
+    const n = pts.length;
+    const mx = pts.reduce((s,c)=>s+c[metric],0)/n;
+    const my = pts.reduce((s,c)=>s+c.sub110,0)/n;
+    let num=0, dx2=0, dy2=0;
+    pts.forEach(c=>{ const dx=c[metric]-mx, dy=c.sub110-my; num+=dx*dy; dx2+=dx*dx; dy2+=dy*dy; });
+    const slope = num/dx2, intercept = my-slope*mx;
+    const r = num/Math.sqrt(dx2*dy2);
+    return {pts, slope, intercept, r};
+  }
+
+  function svgFor(metric){
+    const {pts, slope, intercept, r} = statsFor(metric);
+    const yMin = 5, yMax = 22;
+    const X = v => padL + (v/100)*chartW;
+    const Y = v => padT + chartH - ((v-yMin)/(yMax-yMin))*chartH;
+    let grid = '';
+    for(let i=0;i<=4;i++){
+      const xv = i*25;
+      grid += `<line x1="${X(xv)}" x2="${X(xv)}" y1="${padT}" y2="${padT+chartH}" stroke="#2a2a2a"/>`;
+      grid += `<text x="${X(xv)}" y="${padT+chartH+16}" font-size="9" fill="#7d7869" text-anchor="middle">${xv}%</text>`;
+    }
+    for(let i=0;i<=3;i++){
+      const yv = yMin + (yMax-yMin)*i/3;
+      grid += `<line x1="${padL}" x2="${padL+chartW}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="#2a2a2a"/>`;
+      grid += `<text x="${padL-6}" y="${Y(yv)+3}" font-size="9" fill="#7d7869" text-anchor="end">${yv.toFixed(0)}%</text>`;
+    }
+    const trendLine = `<line x1="${X(0)}" y1="${Y(intercept)}" x2="${X(100)}" y2="${Y(intercept+slope*100)}" stroke="#e78a5f" stroke-width="1.6" stroke-dasharray="5 4" opacity=".85"/>`;
+    let dots = '';
+    pts.forEach(c=>{
+      const cx = X(c[metric]), cy = Y(c.sub110);
+      const color = lerpLevelColor((c[metric]||0)/100);
+      dots += `<circle cx="${cx}" cy="${cy}" r="6" fill="${color}" stroke="#121212" stroke-width="1.5" data-c="${c.c}" class="dot"/>`;
+    });
+    const xLabel = metric==='remotePct' ? '偏遠(含特偏極偏)國小占比' : '非山非市國小占比';
+    return {
+      svg: `<svg class="map-svg" viewBox="0 0 ${W} ${H}">
+        ${grid}
+        ${trendLine}
+        ${dots}
+        <text x="${padL+chartW/2}" y="${H-2}" font-size="10" fill="#b7b2a6" text-anchor="middle">${xLabel} →</text>
+        <text x="10" y="${padT+chartH/2}" font-size="10" fill="#b7b2a6" text-anchor="middle" transform="rotate(-90 10 ${padT+chartH/2})">代理教師占比 →</text>
+      </svg>`,
+      r,
+    };
+  }
+
+  const uid = 'sc'+Math.random().toString(36).slice(2,7);
+  const first = svgFor(xMetric);
+  container.innerHTML += `
+    <div>
+      ${toggle?`<div class="map-toggle" id="${uid}toggle">
+        <button data-m="remotePct" class="active">偏遠國小占比</button>
+        <button data-m="nonmtPct">非山非市國小占比</button>
+      </div>`:''}
+      <div id="${uid}svg">${first.svg}</div>
+      <p class="src" id="${uid}r">每個點是一個縣市；虛線為線性趨勢；Pearson r = ${first.r.toFixed(3)}（n=${COUNTIES.filter(c=>c.sub110!=null).length}縣市，屬縣市層級生態相關，非個別學校因果關係）</p>
+      <div class="map-tip" id="${uid}tip">滑鼠移到／點選任一個點，看縣市數字</div>
+    </div>
+  `;
+  function bind(metric){
+    container.querySelector(`#${uid}svg`).querySelectorAll('.dot').forEach(p=>{
+      p.style.cursor='pointer';
+      p.addEventListener('click', ()=>{
+        const c = COUNTIES.find(x=>x.c===p.dataset.c);
+        const label = metric==='remotePct' ? '偏遠國小占比' : '非山非市國小占比';
+        container.querySelector(`#${uid}tip`).textContent = `${c.c}：${label} ${c[metric]}%｜代理教師占比 ${c.sub110}%`;
+      });
+    });
+  }
+  bind(xMetric);
+  if(toggle){
+    container.querySelector(`#${uid}toggle`).addEventListener('click', e=>{
+      const b = e.target.closest('button'); if(!b) return;
+      container.querySelectorAll(`#${uid}toggle button`).forEach(x=>x.classList.toggle('active', x===b));
+      const res = svgFor(b.dataset.m);
+      container.querySelector(`#${uid}svg`).innerHTML = res.svg.match(/<svg[\s\S]*<\/svg>/)[0];
+      container.querySelector(`#${uid}r`).textContent = `每個點是一個縣市；虛線為線性趨勢；Pearson r = ${res.r.toFixed(3)}（n=${COUNTIES.filter(c=>c.sub110!=null).length}縣市，屬縣市層級生態相關，非個別學校因果關係）`;
+      bind(b.dataset.m);
+    });
+  }
+}
+
+/* ===================== SLIDE 6 ===================== */
+const S6_CARDS = [
+  { ic:'🏫', t:'班級規模',
+    quote:'一般國小：平均每班25.35人｜極偏國小：平均每班7.06人',
+    reveal:'「班上人少，聽起來很棒。但換個角度想：一個老師要包辦所有科目，能選的課、能上的才藝，也跟著變少。」' },
+  { ic:'📉', t:'學習落差', picto:true },
+  { ic:'🚪', t:'中輟／離校比例', dropout:true },
+  { ic:'❓', t:'未來出路——一個查不到答案的問題',
+    quote:'「依依長大後會怎樣？老實說，政府從來沒有追蹤過這個答案。」',
+    tiles:[
+      {v:'38,786', unit:'元', k:'博幼基金會追蹤2,563位畢業生，15-24歲就業者平均月薪'},
+      {v:'51', unit:'%', k:'台大學生來自所得前20%家庭(商周引台大經濟系研究)'},
+    ],
+    bullets:[
+      '國發會委託研究指出：弱勢家庭孩子有{{較高輟學率}}、{{較低學習成就}}',
+    ],
+    tail:'「連『他們後來怎麼了』這個問題，都沒有人正式問過。」' },
+];
+function openS6Card(i){
+  const grid = document.getElementById('s6Grid');
+  const detail = document.getElementById('s6Detail');
+  const skipRow = document.getElementById('s6SkipRow');
+  const c = S6_CARDS[i];
+  grid.classList.add('hidden'); skipRow.classList.add('hidden'); detail.classList.remove('hidden');
+  let html = `<div class="quote">${hl(c.quote||'')}</div><div id="s6Extra"></div>`;
+  if(c.tiles) html += statTiles(c.tiles);
+  if(c.bullets) html += renderBullets(c.bullets);
+  if(c.tail) html += `<p style="font-family:'Noto Serif TC',serif;font-weight:700;font-size:18px;margin-top:14px;">${hl(c.tail)}</p>`;
+  if(c.reveal) html = `<div class="quote">${hl(c.quote)}</div><p id="revealText" style="font-weight:600;font-size:18px;min-height:24px;"></p><div id="s6Extra"></div>`;
+  html += `<div class="detail-nav"><button class="btn ghost" id="s6Back">← 回到圖卡選單</button><button class="btn" id="s6Next">進入下一段 →</button></div>`;
+  detail.innerHTML = html;
+  if(c.reveal){ setTimeout(()=>{ document.getElementById('revealText').textContent = c.reveal; }, 500); }
+  if(c.picto) renderPicto(document.getElementById('s6Extra'));
+  if(c.dropout) renderDropoutChart(document.getElementById('s6Extra'));
+  document.getElementById('s6Back').addEventListener('click', ()=>{
+    detail.classList.add('hidden'); grid.classList.remove('hidden'); skipRow.classList.remove('hidden');
+  });
+  document.getElementById('s6Next').addEventListener('click', ()=>{
+    showSlide(7);
+  });
+}
+(function(){
+  const grid = document.getElementById('s6Grid');
+  grid.innerHTML = S6_CARDS.map((c,i)=>`<div class="topic-card" data-i="${i}"><div class="ic">${c.ic}</div><div class="t">${c.t}</div></div>`).join('');
+  grid.querySelectorAll('.topic-card').forEach(card=>card.addEventListener('click', ()=>openS6Card(+card.dataset.i)));
+  document.getElementById('s6Skip').addEventListener('click', ()=>showSlide(7));
+})();
+function renderPicto(container){
+  container.innerHTML = `
+    <div class="picto-heading">每10位國三生，有幾位英文/數學拿C級分（待加強）？</div>
+    <div class="picto-toggle" id="pictoToggle">
+      <button data-m="national" class="active">全國</button>
+      <button data-m="rural">偏鄉抽樣8校</button>
+    </div>
+    <div class="picto-legend"><span class="sw"></span>紅點＝拿C級分的人數（每點代表1/10）</div>
+    <div class="picto-subject"><div class="lbl">英文</div><div class="picto-row" id="pictoRowEn"></div><div class="pct" id="pictoPctEn"></div></div>
+    <div class="picto-subject"><div class="lbl">數學</div><div class="picto-row" id="pictoRowMa"></div><div class="pct" id="pictoPctMa"></div></div>
+    <p class="src" style="font-size:14px;">來源：博幼基金會創辦人李家同,聯合報,2026</p>
+    <div style="margin-top:22px;">
+      <p class="picto-heading" style="margin-bottom:6px;">PISA 2018 閱讀素養量尺分數（非滿分制，OECD平均約487分，分數愈高代表閱讀素養愈好）</p>
+      <svg class="stair-svg" viewBox="0 0 340 150">
+        <rect x="20" y="95" width="70" height="35" fill="#4fa88f"/>
+        <rect x="110" y="40" width="70" height="90" fill="#d9ab4e"/>
+        <text x="55" y="90" text-anchor="middle" font-size="14" fill="#eeece6" font-weight="700">偏遠</text>
+        <text x="55" y="145" text-anchor="middle" font-size="13" fill="#b7b2a6">475分</text>
+        <text x="145" y="35" text-anchor="middle" font-size="14" fill="#eeece6" font-weight="700">都會</text>
+        <text x="145" y="145" text-anchor="middle" font-size="13" fill="#b7b2a6">524分</text>
+        <line x1="90" y1="95" x2="110" y2="95" stroke="#7d7869" stroke-dasharray="3 3"/>
+        <text x="200" y="75" font-size="15" fill="#eeece6" font-weight="700">← 差距49分</text>
+      </svg>
+      <p class="src" style="font-size:14px;">全台有{{17.8%}}學生閱讀未達基本水準；城鄉閱讀分數差距{{49分}} [教育部PISA記者會,2019；立法院預算中心,2021]</p>
+      <p class="src" style="font-size:14px;">⚠️也有研究指出，城鄉內部的落差其實比城鄉之間更大 [黃敏雄,教育研究集刊,2015]</p>
+    </div>
+  `;
+  container.querySelectorAll('.src').forEach(p=>{ p.innerHTML = hl(p.innerHTML); });
+  const data = { national:{en:26.71,ma:29.04}, rural:{en:68,ma:65} };
+  function dotsHtml(pct){
+    const hitCount = Math.round(pct/10);
+    let html='';
+    for(let i=0;i<10;i++) html += `<div class="p${i<hitCount?' hit':''}"></div>`;
+    return html;
+  }
+  function render(mode){
+    const d = data[mode];
+    document.getElementById('pictoRowEn').innerHTML = dotsHtml(d.en);
+    document.getElementById('pictoRowMa').innerHTML = dotsHtml(d.ma);
+    document.getElementById('pictoPctEn').textContent = d.en+'%';
+    document.getElementById('pictoPctMa').textContent = d.ma+'%';
+  }
+  render('national');
+  document.getElementById('pictoToggle').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#pictoToggle button').forEach(x=>x.classList.toggle('active',x===b));
+    render(b.dataset.m);
+  });
+}
+function renderDropoutChart(container){
+  const sorted = [...COUNTIES].sort((a,b)=>b.remotePct-a.remotePct);
+  const maxJr = 1.2, maxHs = 10;
+  container.innerHTML = `
+    <div class="drop-legend"><span><span class="sw" style="background:var(--accent)"></span>國中中輟率(113)</span><span><span class="sw" style="background:var(--yi)"></span>高中學籍喪失率(112)</span></div>
+    <div class="drop-list">
+      ${sorted.map(c=>`
+        <div class="drop-row">
+          <div class="nm">${c.c}</div>
+          <div class="drop-track"><div class="drop-fill jr" style="width:${c.jr?(c.jr/maxJr*100):0}%"></div></div>
+          <div class="drop-track"><div class="drop-fill hs" style="width:${c.hs?(c.hs/maxHs*100):0}%"></div></div>
+          <div>${c.jr??'—'}% / ${c.hs??'—'}%</div>
+        </div>`).join('')}
+    </div>
+    <p class="src">縣市由上到下依「偏遠國小占比」排序。來源：縣市層級中輟率與高中休退學率.csv，教育部國教署113/112學年度</p>
+    <p class="src">監察院報告指出，部分縣市國中生會考「基本能力未達率」高達40%-50% [監察院,2018]</p>
+  `;
+}
+
+/* ===================== SLIDE 7 ===================== */
+const S7_BEATS = [
+  {type:'story', text:'政府確實推動了補救教學。'},
+  {type:'story', text:'但真正撐起這些課後時間的，是老師自己多擠出來的力氣。'},
+  {type:'case', text:'立法院預算中心2018年報告指出，補救教學師資以校內教師為主，「相對加重其教學負擔，以致擔任教學意願不高」，英語補救教學覆蓋率僅15%-26%；國發會委託研究也發現，偏鄉教師儘管非常努力，卻始終未能獲得對應的肯定。', src:'立法院預算中心,2018；國發會委託研究,2016'},
+  {type:'story', text:'依依的月考，一直考得不錯。'},
+  {type:'story', text:'直到有一天，依依發現：自己的數學，其實還停在小學三年級的程度——只是老師出的考卷，一直沒有那麼難。'},
+  {type:'case', text:'這不是特例。前台東縣教育局長劉鎮寧實際訪查發現：「台東國小學生的月考成績經常遠高於政府每年為學生做的學科能力檢測」，追查後發現，是「老師出了過於簡單的試題」，長期下來「八年級的數學程度還停在小三，但中學老師卻用現在（八年級）的課本教下去」；監察院調查也指出，部分縣市國中生會考「基本能力未達率」高達40%-50%。', src:'李雪莉，報導者，2018；監察院,2018'},
+  {type:'story', text:'上了國中、高中之後，這個落差，依依一個人扛。'},
+  {type:'case', text:'國家發展委員會委託研究指出，偏鄉學生相對有較高輟學率、較低學習成就；今周刊分析大學招生資料發現，近5年台大有85%學生來自六都，臺北市考上台大的比率是其人口比率的3倍；也有學者以官方稅務登記資料分析發現，51%台大學生來自所得前20%家庭。', src:'國發會委託研究,2016；今周刊,2020；商周引林明仁研究,2023'},
+  {type:'story', text:'依依的未來會是什麼樣子？沒有人能給一個肯定的答案——連政府都沒有正式追蹤過這群孩子後來怎麼了。'},
+  {type:'case', text:'目前唯一找得到的長期追蹤數字，來自一個民間基金會：博幼社會福利基金會累計追蹤2,563位受助畢業生，其中15-24歲已就業者平均月薪38,786元。這是我們找遍公開資料，最接近「答案」的一組數字。', src:'博幼基金會官網'},
+];
+(function(){
+  const wrap = document.getElementById('s7Steps');
+  const btn = document.getElementById('s7Btn');
+  let i = 0;
+  function render(){
+    const b = S7_BEATS[i];
+    wrap.innerHTML = `<div class="beat ${b.type}">${b.type==='case'?'<span class="tag">真實案例</span><br>':''}${b.text}${b.src?`<div class="src">來源：${b.src}</div>`:''}</div>`;
+    btn.textContent = i<S7_BEATS.length-1 ? '繼續' : '進入下一段';
+  }
+  btn.addEventListener('click', ()=>{
+    if(i<S7_BEATS.length-1){ i++; render(); }
+    else{ showSlide(8); }
+  });
+  render();
+})();
+
+/* ===================== SLIDE 8 ===================== */
+const S8_LINES = [
+  '「我們能做什麼？」\n捐款、當志工、報考公費老師……都可以。但有時候，多一份對議題的關心，本身就是一種小小的改變。',
+  '多一份認識，可能讓你——下次看到『中輟生』這三個字的時候，不會只想到『他是不是很混』，而是想起依依，想起他所面對的，其實是一整個結構造成的結果，不是他一個人的選擇。',
+  '同時我們也想提醒你：中輟並不代表不好，偏鄉資源不足，也不代表這裡不值得被喜歡。每一個孩子，都有自己擅長、值得被看見的地方——我們只是希望，能有更多人願意認識這個議題，也更願意同理任何自己不了解的陌生族群。',
+  '我始終相信，如果世界上的所有人，都能對自己不了解的陌生族群、弱勢族群，多一份同理、多一份了解，這個世界就會慢慢地少一點仇恨，慢慢變得友善。',
+];
+(function(){
+  const wrap = document.getElementById('s8Steps');
+  const btn = document.getElementById('s8Btn');
+  let i = 0;
+  function render(){
+    wrap.innerHTML = `<p style="font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;line-height:1.7;white-space:pre-line;">${S8_LINES[i]}</p>`;
+    btn.textContent = i<S8_LINES.length-1 ? '繼續' : '繼續探索 →';
+  }
+  btn.addEventListener('click', ()=>{
+    if(i<S8_LINES.length-1){ i++; render(); }
+    else{ showSlide(9); }
+  });
+  render();
+})();
+
+/* ===================== SLIDE 9 ===================== */
+const S9_CARDS = [
+  { ic:'⚖️', t:'非山非市學校——夾在中間的孩子',
+    quote:'「依依的學校是『偏遠』，所以有補助。但隔壁鎮上的小學，因為剛好卡在標準邊緣，被歸類成『非山非市』——補助直接砍半。」',
+    nonmt:true,
+    tiles:[
+      {v:'471', unit:'校', k:'113學年度全國非山非市國小(占全國國小約一半)'},
+      {v:'76', unit:'%', k:'非山非市學校招生困難比例'},
+      {v:'71', unit:'%', k:'非山非市學校難聘教師比例'},
+    ],
+    bullets:[
+      '新北市三芝橫山國小因被歸類非山非市，{{4年招不到英語老師}} [聯合新聞網,2024]',
+      '非山非市學校{{無法領教師久任獎金}} [聯合報,2023]',
+    ] },
+  { ic:'📱', t:'偏鄉3C育兒——手機，成了另一種保母',
+    quote:'「依依的手機，比爸媽陪他的時間還長。」',
+    c3:true,
+    bullets:[
+      '偏鄉家長忙於生計、日常陪伴缺席；暑假僅約{{45%}}偏鄉孩子有安親班/才藝班可替代3C [聯合報,2026]',
+      '國衛院政策文件指出偏鄉兒童{{遊戲沉迷比例較高}} [國衛院兒童醫學及健康研究中心]',
+      '⚠️誠實揭露：目前沒有專門研究「偏鄉3C使用對兒童發展影響」的台灣本土研究，這塊學術證據仍薄弱',
+    ] },
+];
+(function(){
+  const grid = document.getElementById('s9Grid');
+  const detail = document.getElementById('s9Detail');
+  grid.innerHTML = S9_CARDS.map((c,i)=>`<div class="topic-card" data-i="${i}"><div class="ic">${c.ic}</div><div class="t">${c.t}</div></div>`).join('');
+  grid.querySelectorAll('.topic-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const c = S9_CARDS[+card.dataset.i];
+      grid.classList.add('hidden'); detail.classList.remove('hidden');
+      let html = `<div class="quote">${hl(c.quote)}</div>${c.tiles?statTiles(c.tiles):''}${renderBullets(c.bullets)}<div id="s9Extra"></div>`;
+      html += `<div class="detail-nav"><button class="btn ghost" id="s9Back">← 回到圖卡選單</button></div>`;
+      detail.innerHTML = html;
+      if(c.nonmt) renderNonmtChart(document.getElementById('s9Extra'));
+      if(c.c3) render3cChart(document.getElementById('s9Extra'));
+      document.getElementById('s9Back').addEventListener('click', ()=>{ detail.classList.add('hidden'); grid.classList.remove('hidden'); });
+    });
+  });
+})();
+function renderNonmtChart(container){
+  const maxV = Math.max(...LEVELS.map(l=>l.ratio));
+  container.innerHTML = `
+    <p style="font-weight:600;margin-bottom:8px;">五級生師比階梯（非山非市卡在中間）</p>
+    <div style="display:flex;align-items:flex-end;gap:10px;height:120px;margin-bottom:6px;">
+      ${LEVELS.map((l,i)=>`
+        <div style="flex:1;text-align:center;">
+          <div style="height:${(l.ratio/maxV*90)}px;background:var(${LVL_VARS[i]});border-radius:4px 4px 0 0;${l.key==='非山非市'?'outline:2px dashed var(--accent);outline-offset:2px;':''}"></div>
+          <div style="font-size:11px;margin-top:4px;">${l.n}</div>
+          <div style="font-size:11px;font-weight:700;">${l.ratio}</div>
+        </div>`).join('')}
+    </div>
+    <p class="src">來源：校名層級生師比與班級規模資料，已包含非山非市類別</p>
+    <p style="font-weight:600;margin-top:22px;margin-bottom:4px;">同樣是資源困難地區，補助卻差一半</p>
+    <div class="drop-legend"><span><span class="sw" style="background:var(--yi)"></span>偏遠</span><span><span class="sw" style="background:var(--yang)"></span>非山非市</span></div>
+    <div class="cmp-metric">
+      <div class="cmp-label">學校教育經費補助(3年)</div>
+      <div class="cmp-bars">
+        <div class="cmp-bar-row"><div>偏遠</div><div class="cmp-track"><div class="cmp-fill rural" style="width:100%"></div></div><div>200萬</div></div>
+        <div class="cmp-bar-row"><div>非山非市</div><div class="cmp-track"><div class="cmp-fill urban" style="width:50%"></div></div><div>100萬</div></div>
+      </div>
+    </div>
+    <div class="cmp-metric">
+      <div class="cmp-label">課程活化補助(3年)</div>
+      <div class="cmp-bars">
+        <div class="cmp-bar-row"><div>偏遠</div><div class="cmp-track"><div class="cmp-fill rural" style="width:100%"></div></div><div>50萬</div></div>
+        <div class="cmp-bar-row"><div>非山非市</div><div class="cmp-track"><div class="cmp-fill urban" style="width:24%"></div></div><div>12萬</div></div>
+      </div>
+    </div>
+    <p class="src">來源：葉德正、王思慧，〈偏鄉小學限額「非山非市」難翻身〉，聯合新聞網，2024-06-11(新北市案例)</p>
+  `;
+}
+function render3cChart(container){
+  const rows = [
+    {label:'每週上網時數(小時)', rural:20.8, urban:12.4, max:24},
+    {label:'擁有個人手機', rural:71.7, urban:44.4, max:100},
+    {label:'使用社群媒體', rural:88.5, urban:71.5, max:100},
+    {label:'家長完全不設使用時間限制', rural:24.6, urban:11.4, max:100},
+    {label:'從未與家長討論使用規範', rural:44.5, urban:37.8, max:100},
+    {label:'個資曾公開曝露', rural:36.0, urban:27.1, max:100},
+  ];
+  container.innerHTML = `
+    <div class="drop-legend"><span><span class="sw" style="background:var(--yi)"></span>偏鄉</span><span><span class="sw" style="background:var(--yang)"></span>都市</span></div>
+    ${rows.map(r=>`
+      <div class="cmp-metric">
+        <div class="cmp-label">${r.label}</div>
+        <div class="cmp-bars">
+          <div class="cmp-bar-row"><div>偏鄉</div><div class="cmp-track"><div class="cmp-fill rural" style="width:${r.rural/r.max*100}%"></div></div><div>${r.rural}${r.max===24?'hr':'%'}</div></div>
+          <div class="cmp-bar-row"><div>都市</div><div class="cmp-track"><div class="cmp-fill urban" style="width:${r.urban/r.max*100}%"></div></div><div>${r.urban}${r.max===24?'hr':'%'}</div></div>
+        </div>
+      </div>`).join('')}
+    <p class="src">來源：兒童福利聯盟《2026年台灣城鄉兒童生活福祉調查》，2026-07</p>
+  `;
+}
+</script>
